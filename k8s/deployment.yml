@@ -33,6 +33,10 @@ spec:
           image: ghcr.io/joaohlemes/devops-api:latest
           imagePullPolicy: Always
 
+          envFrom:
+            - configMapRef:
+                name: devops-api-config
+
           ports:
             - name: http
               containerPort: 8080

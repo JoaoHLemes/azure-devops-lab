@@ -117,12 +117,22 @@ jobs:
       - minikube
 
     steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v7
+
       - name: Verificar cluster
         shell: powershell
         run: |
           minikube status
           minikube kubectl -- get nodes
 
+      - name: Aplicar manifests do Kubernetes
+        shell: powershell
+        run: |
+          minikube kubectl -- apply -f k8s/configmap.yml
+          minikube kubectl -- apply -f k8s/service.yml
+          minikube kubectl -- apply -f k8s/deployment.yml
+          
       - name: Registrar causa do deploy
         shell: powershell
         run: |
