@@ -9,9 +9,11 @@ on:
     branches:
       - main
 
+  workflow_dispatch:
+
 jobs:
   build-and-test:
-    name: Compilar e testar
+    name: Compilar, testar e criar imagem
     runs-on: ubuntu-latest
 
     steps:
@@ -39,3 +41,13 @@ jobs:
           --no-build
           --logger trx
           --results-directory TestResults
+
+      - name: Construir imagem Docker
+        run: |
+          docker build \
+            --tag devops-api:latest \
+            --tag devops-api:${{ github.sha }} \
+            .
+
+      - name: Exibir imagem criada
+        run: docker images devops-api
