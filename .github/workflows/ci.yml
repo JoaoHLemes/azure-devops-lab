@@ -64,11 +64,11 @@ jobs:
             ghcr.io/joaohlemes/devops-api:latest
             ghcr.io/joaohlemes/devops-api:${{ github.sha }}
   deploy-local:
-    name: Deploy no Minikube
+    name: Deploy manual no Minikube
     needs: build-and-test
 
     if: >
-      github.event_name == 'push' &&
+      github.event_name == 'workflow_dispatch' &&
       github.ref == 'refs/heads/main'
 
     runs-on:
@@ -84,6 +84,15 @@ jobs:
           minikube status
           minikube kubectl -- get nodes
 
+      - name: Registrar causa do deploy
+        shell: powershell
+        run: |
+          minikube kubectl -- annotate `
+            deployment/devops-api `
+            "kubernetes.io/change-cause=GitHub Actions commit ${{ github.sha }}" `
+            --namespace=devops-lab `
+            --overwrite
+
       - name: Atualizar imagem do Deployment
         shell: powershell
         run: |
@@ -93,12 +102,33 @@ jobs:
             --namespace=devops-lab
 
       - name: Aguardar Rolling Update
+        id: rollout
+        continue-on-error: true
         shell: powershell
         run: |
           minikube kubectl -- rollout status `
             deployment/devops-api `
             --namespace=devops-lab `
             --timeout=180s
+
+      - name: Executar rollback em caso de falha
+        if: steps.rollout.outcome == 'failure'
+        shell: powershell
+        run: |
+          minikube kubectl -- rollout undo `
+            deployment/devops-api `
+            --namespace=devops-lab
+
+          minikube kubectl -- rollout status `
+            deployment/devops-api `
+            --namespace=devops-lab `
+            --timeout=180s
+
+      - name: Marcar pipeline como reprovado
+        if: steps.rollout.outcome == 'failure'
+        shell: powershell
+        run: |
+          throw "O deploy falhou e o rollback foi executado."
 
       - name: Exibir versão implantada
         shell: powershell
