@@ -31,6 +31,12 @@ jobs:
 
       - name: Restaurar dependências
         run: dotnet restore DevOpsLab.slnx
+      - name: Verificar formatação
+        run: >
+          dotnet format DevOpsLab.slnx
+          --verify-no-changes
+          --no-restore
+          --severity warn
 
       - name: Compilar aplicação
         run: >
@@ -38,13 +44,24 @@ jobs:
           --configuration Release
           --no-restore
 
-      - name: Executar testes
+      - name: Executar testes com cobertura
         run: >
           dotnet test DevOpsLab.slnx
           --configuration Release
           --no-build
+          --collect:"XPlat Code Coverage"
           --logger trx
           --results-directory TestResults
+      - name: Publicar testes e cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-testes-${{ github.run_number }}
+          path: |
+            TestResults/**/*.trx
+            TestResults/**/coverage.cobertura.xml
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Login no GitHub Container Registry
         if: github.event_name != 'pull_request'
