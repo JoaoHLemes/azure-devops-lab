@@ -31,6 +31,10 @@ jobs:
 
       - name: Restaurar dependências
         run: dotnet restore DevOpsLab.slnx
+
+      - name: Restaurar ferramentas locais
+        run: dotnet tool restore
+
       - name: Verificar formatação
         run: >
           dotnet format DevOpsLab.slnx
@@ -50,8 +54,24 @@ jobs:
           --configuration Release
           --no-build
           --collect:"XPlat Code Coverage"
+          --settings coverage.runsettings
           --logger trx
           --results-directory TestResults
+
+      - name: Gerar relatório de cobertura
+        run: >
+          dotnet reportgenerator
+          "-reports:TestResults/**/coverage.cobertura.xml"
+          "-targetdir:TestResults/CoverageReport"
+          "-reporttypes:Html;TextSummary"
+
+      - name: Verificar cobertura mínima
+        shell: pwsh
+        run: >
+          ./scripts/check-coverage.ps1
+          -ResultsDirectory TestResults
+          -MinimumCoverage 70
+
       - name: Publicar testes e cobertura
         if: always()
         uses: actions/upload-artifact@v4
@@ -60,6 +80,7 @@ jobs:
           path: |
             TestResults/**/*.trx
             TestResults/**/coverage.cobertura.xml
+            TestResults/CoverageReport/**
           if-no-files-found: error
           retention-days: 14
 
@@ -80,6 +101,7 @@ jobs:
           tags: |
             ghcr.io/joaohlemes/devops-api:latest
             ghcr.io/joaohlemes/devops-api:${{ github.sha }}
+
   deploy-local:
     name: Deploy manual no Minikube
     needs: build-and-test

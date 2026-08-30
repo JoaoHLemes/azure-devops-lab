@@ -32,3 +32,6 @@ app.MapGet("/health", () =>
 app.MapControllers();
 
 app.Run();
+public partial class Program
+{
+}
