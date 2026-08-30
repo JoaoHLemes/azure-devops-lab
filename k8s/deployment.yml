@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: devops-api
+  namespace: devops-lab
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: devops-api
+
+  template:
+    metadata:
+      labels:
+        app: devops-api
+
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+
+      containers:
+        - name: devops-api
+          image: ghcr.io/joaohlemes/devops-api:latest
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8080
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+
+            limits:
+              cpu: 500m
+              memory: 256Mi
