@@ -63,3 +63,46 @@ jobs:
           tags: |
             ghcr.io/joaohlemes/devops-api:latest
             ghcr.io/joaohlemes/devops-api:${{ github.sha }}
+  deploy-local:
+    name: Deploy no Minikube
+    needs: build-and-test
+
+    if: >
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main'
+
+    runs-on:
+      - self-hosted
+      - Windows
+      - X64
+      - minikube
+
+    steps:
+      - name: Verificar cluster
+        shell: powershell
+        run: |
+          minikube status
+          minikube kubectl -- get nodes
+
+      - name: Atualizar imagem do Deployment
+        shell: powershell
+        run: |
+          minikube kubectl -- set image `
+            deployment/devops-api `
+            devops-api=ghcr.io/joaohlemes/devops-api:${{ github.sha }} `
+            --namespace=devops-lab
+
+      - name: Aguardar Rolling Update
+        shell: powershell
+        run: |
+          minikube kubectl -- rollout status `
+            deployment/devops-api `
+            --namespace=devops-lab `
+            --timeout=180s
+
+      - name: Exibir versão implantada
+        shell: powershell
+        run: |
+          minikube kubectl -- get deployment devops-api `
+            --namespace=devops-lab `
+            --output=jsonpath="{.spec.template.spec.containers[0].image}"
