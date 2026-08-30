@@ -36,6 +36,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: devops-api-config
+            - secretRef:
+                name: devops-api-secret
 
           ports:
             - name: http
