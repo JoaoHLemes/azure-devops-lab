@@ -150,6 +150,7 @@ jobs:
           minikube kubectl -- apply -f k8s/configmap.yml
           minikube kubectl -- apply -f k8s/service.yml
           minikube kubectl -- apply -f k8s/deployment.yml
+          minikube kubectl -- apply -f k8s/hpa.yml
 
       - name: Registrar causa do deploy
         shell: powershell
