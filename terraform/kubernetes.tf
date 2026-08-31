@@ -32,3 +32,15 @@ output "configmap_criado" {
   description = "ConfigMap criado no Kubernetes"
   value       = kubernetes_config_map_v1.terraform_info.metadata[0].name
 }
+
+resource "kubernetes_namespace_v1" "devops_lab" {
+  metadata {
+    name = "devops-lab"
+
+    labels = {
+      projeto    = var.nome_projeto
+      ambiente   = var.ambiente
+      gerenciado = "terraform"
+    }
+  }
+}
