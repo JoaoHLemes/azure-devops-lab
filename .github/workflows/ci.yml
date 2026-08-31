@@ -16,6 +16,33 @@ permissions:
   packages: write
 
 jobs:
+  terraform-validate:
+    name: Validar Terraform
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - name: Baixar o repositório
+        uses: actions/checkout@v7
+
+      - name: Instalar Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: '1.16.0'
+          terraform_wrapper: false
+
+      - name: Verificar formatação
+        run: terraform fmt -check -recursive
+
+      - name: Inicializar providers
+        run: terraform init -backend=false -input=false
+
+      - name: Validar configuração
+        run: terraform validate -no-color
+  
   build-and-test:
     name: Compilar, testar e publicar imagem
     runs-on: ubuntu-latest
