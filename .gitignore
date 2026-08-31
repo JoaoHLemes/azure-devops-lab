@@ -482,3 +482,11 @@ $RECYCLE.BIN/
 *.swp
 # Resultados locais dos testes
 TestResults/
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+terraform/output/
