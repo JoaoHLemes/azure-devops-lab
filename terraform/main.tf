@@ -6,7 +6,17 @@ terraform {
       source  = "hashicorp/local"
       version = "2.9.0"
     }
+
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "3.2.1"
+    }
   }
+}
+
+provider "kubernetes" {
+  config_path    = pathexpand("~/.kube/config")
+  config_context = "minikube"
 }
 
 variable "nome_projeto" {
